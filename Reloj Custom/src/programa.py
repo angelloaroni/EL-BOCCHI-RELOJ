@@ -1,25 +1,25 @@
 import time
 import threading
 import tkinter
-import winsound
+import pygame  # originalmente winsound xd
 from PIL import Image, ImageTk
-from gif import Gif #no usado por ahora
 import os
 
 
-#Clase contador
+# Clase contador
 class Contador:
     def __init__(self):
-        # los atributos son el tiempo, y variables para controlar el avance del contador y reproduccion del sonido
+        # Inicializa los atributos del contador
         self.contador_activo = False
         self.sonido_reproduciendo = False
         self.segundos = 0
         self.minutos = 0
         self.horas = 0
         self.cancion = "Seishun Complex"
+        pygame.mixer.init()  
 
     def crear_contador(self, label):
-        # crea el contador y su logica
+        # Crea el contador y su lógica
         while self.contador_activo:
             self.segundos += 1
             time.sleep(1)
@@ -29,28 +29,31 @@ class Contador:
             if self.minutos == 60:
                 self.minutos = 0
                 self.horas += 1
-            #actualizacion del label
+            
+            # Actualización del label
             label.config(text=f"Tiempo transcurrido: {self.horas:02d}:{self.minutos:02d}:{self.segundos:02d}")
             
-            # CONFIGURAR MAS PARA QUE NO SEAN 3 SEGUNDOS SINO MAS BIEN UN TIEMPO ELEGIDO POR USUARIO
             if self.segundos == 3 and not self.sonido_reproduciendo:
-                self.sonido_reproduciendo = True  # cuando sonido se reproduce, se actualiza a True
+                self.sonido_reproduciendo = True  # Cuando el sonido se reproduce, se actualiza a True
                 self.reproducirSonido()
 
     def reproducirSonido(self):
-        # SND_ASYNC permite que el sonido se reproduzca de forma sincrona, asi no se interrumpe la ejecucion del resto
+        #dependiendo de lo elegido se reproduce alguna de estas 
         if self.cancion == "Seishun Complex":
-            winsound.PlaySound("sounds\\alarmaBTR.wav", winsound.SND_ASYNC | winsound.SND_FILENAME)
+            pygame.mixer.music.load("sounds/alarmaBTR.mp3")
         elif self.cancion == "World.execute(me);":
-            winsound.PlaySound("sounds\\World.Execute(me).wav", winsound.SND_ASYNC | winsound.SND_FILENAME)
+            pygame.mixer.music.load("sounds/World.Execute(me).mp3")
         elif self.cancion == "Rock'n Roll morning light falls on you":
-            winsound.PlaySound("sounds\\BestKessokuSong.wav", winsound.SND_ASYNC | winsound.SND_FILENAME)
+            pygame.mixer.music.load("sounds/BestKessokuSong.mp3")
         elif self.cancion == "Freedom Dive":
-            winsound.PlaySound("sounds\\FreedomDive.wav", winsound.SND_ASYNC | winsound.SND_FILENAME)
+            pygame.mixer.music.load("sounds/FreedomDive.mp3")
+
+
+        pygame.mixer.music.play(-1)  
 
     def detenerSonido(self):
         self.sonido_reproduciendo = False  # Actualizar el estado
-        winsound.PlaySound(None, winsound.SND_ASYNC)  # Detener el sonido
+        pygame.mixer.music.stop()  # Detener el sonido
 
     def iniciarContador(self, label):
         if not self.contador_activo:
@@ -67,10 +70,10 @@ class Contador:
         self.segundos = 0
         self.minutos = 0
         self.horas = 0
-        #reinicio del label
+        # Reinicio del label
         label.config(text=f"Tiempo transcurrido: {self.horas:02d}:{self.minutos:02d}:{self.segundos:02d}")
 
-# Crear la ventana principal
+# Configuración de la ventana principal de tkinter
 root = tkinter.Tk()
 root.title("Ventana del contador")
 root.config(bg="black")
@@ -105,12 +108,8 @@ btn3.place(x=800, y=440)
 
 gif_path = os.path.join("gifs", "bocchi-the-rock-anime.gif")
 
-#queria poner esto pero la verdad es que el gif no se mueve y no se porque
-gif = Gif(root, gif_path) 
-gif.place(100, 50)
-
-cancion_var = tkinter.StringVar(value="Seishun Complex")  # canción por defecto
-# menú desplegable para seleccionar las canciones
+# Menú desplegable para seleccionar las canciones
+cancion_var = tkinter.StringVar(value="Seishun Complex")  # Canción por defecto
 desplegable = tkinter.OptionMenu(root, cancion_var, 
                                   "Seishun Complex", 
                                   "World.execute(me);",
@@ -122,7 +121,7 @@ desplegable.pack()
 desplegable.place(x=1200, y=200)
 
 # Cargar y colocar la imagen
-imagen_pil = Image.open("imgs\mainIMG.png")
+imagen_pil = Image.open("imgs/mainIMG.png")  
 # Se redimensiona la imagen con la librería PIL, se ajusta a 400x420
 imagenRedimensionada = imagen_pil.resize((400, 420))
 # Se convierte la imagen en tkinter usando .PhotoImage
